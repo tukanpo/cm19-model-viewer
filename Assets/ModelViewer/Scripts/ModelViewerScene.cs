@@ -9,7 +9,7 @@ namespace ModelViewer
         [SerializeField] AnimationMenuView _animationMenuView;
         [SerializeField] CameraMenuView _cameraMenuView;
         [SerializeField] ViewInputReceiver _viewInputReceiver;
-        [SerializeField] ModelViewerCameraController _cameraController;
+        [SerializeField] CameraController _cameraController;
 
         void Start()
         {

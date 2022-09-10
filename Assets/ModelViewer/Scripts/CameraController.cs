@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ModelViewer
 {
-    public class ModelViewerCameraController : MonoBehaviour
+    public class CameraController : MonoBehaviour
     {
         [SerializeField] GameObject _camera;
         [SerializeField] GameObject _model;
