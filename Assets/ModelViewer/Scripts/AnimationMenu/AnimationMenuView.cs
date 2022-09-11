@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEditor.Animations;
 using UnityEngine;
 
 namespace ModelViewer
@@ -9,14 +9,17 @@ namespace ModelViewer
     {
         public class LayerInfo
         {
+            public AnimatorControllerLayer Layer { get; }
+            
             public int Index { get; }
 
             public string Name { get; }
 
             public List<StateInfo> StateInfos { get; }
 
-            public LayerInfo(int index, string name, List<StateInfo> stateInfos)
+            public LayerInfo(AnimatorControllerLayer layer, int index, string name, List<StateInfo> stateInfos)
             {
+                Layer = layer;
                 Index = index;
                 Name = name;
                 StateInfos = stateInfos;
@@ -25,47 +28,73 @@ namespace ModelViewer
 
         public class StateInfo
         {
-            public string Name { get; }
+            AnimatorState State { get; }
 
-            public StateInfo(string name)
+            public string FullPath { get; }
+            
+            public StateInfo(AnimatorState state, string fullPath)
             {
-                Name = name;
+                State = state;
+                FullPath = fullPath;
             }
         }
 
-        [SerializeField] Animator _animator;
         [SerializeField] GameObject _content;
         [SerializeField] AnimationLayerView _animationLayerViewPrefab;
 
+        Animator _animator;
         List<LayerInfo> _layerInfos;
 
         public Action<AnimationStateView> OnChanged { get; set; }
 
-        void Start()
+        public void ApplyParam(Animator animator)
         {
-#if UNITY_EDITOR
-            
-            // TODO: サブステート考慮されてない
-            // https://light11.hatenadiary.com/entry/2020/02/07/192647
-            
+            _animator = animator;
             _layerInfos = new List<LayerInfo>();
-            var rac = _animator.runtimeAnimatorController;
-            var ac = rac as UnityEditor.Animations.AnimatorController;
 
-            for (var i = 0; i < ac.layers.Length; i++)
-            {
-                var layer = ac.layers[i];
-                var sm = layer.stateMachine;
-                var stateInfos = sm.states.Select(state => new StateInfo(state.state.name)).ToList();
-                _layerInfos.Add(new LayerInfo(i, layer.name, stateInfos));
-            }
+            GetAllAnimationStatesOnlyEditor(_layerInfos);
 
             foreach (var x in _layerInfos)
             {
                 var obj = Instantiate(_animationLayerViewPrefab, _content.transform);
                 obj.ApplyParam(x, OnChanged);
             }
+        }
+
+        void GetAllAnimationStatesOnlyEditor(List<LayerInfo> resultLayerInfos)
+        {
+#if UNITY_EDITOR
+            var rac = _animator.runtimeAnimatorController;
+            var ac = rac as AnimatorController;
+
+            for (var i = 0; i < ac.layers.Length; i++)
+            {
+                var layer = ac.layers[i];
+                var stateInfos = new List<StateInfo>();
+                GetAllStates(layer.stateMachine, null, stateInfos);
+                
+                resultLayerInfos.Add(new LayerInfo(layer, i, layer.name, stateInfos));
+            }
 #endif
+        }
+
+        void GetAllStates(AnimatorStateMachine stateMachine, string parentPath, List<StateInfo> resultStateInfos)
+        {
+            if (!string.IsNullOrEmpty(parentPath))
+            {
+                parentPath += ".";
+            }
+ 
+            foreach (var state in stateMachine.states)
+            {
+                var stateFullPath = $"{parentPath}{state.state.name}";
+                resultStateInfos.Add(new StateInfo(state.state, stateFullPath));
+            }
+
+            foreach (var subStateMachine in stateMachine.stateMachines)
+            {
+                GetAllStates(subStateMachine.stateMachine, subStateMachine.stateMachine.name, resultStateInfos);
+            }
         }
     }
 }

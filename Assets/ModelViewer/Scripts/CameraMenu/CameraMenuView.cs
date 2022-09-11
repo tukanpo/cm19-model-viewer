@@ -4,16 +4,12 @@ using UnityEngine.UI;
 
 namespace ModelViewer
 {
-    // TODO: ModelRotationView
-
     public class CameraMenuView : MonoBehaviour
     {
         [SerializeField] Button _frontButton;
         [SerializeField] Button _leftButton;
         [SerializeField] Button _rightButton;
         [SerializeField] Button _backButton;
-
-        // TODO: Y軸角度調整＆確認用の Input Field + Slider?
 
         public Action OnRotationFrontButton { get; set; }
         public Action OnRotationLeftButton { get; set; }

@@ -17,6 +17,9 @@ namespace ModelViewer
             {
                 if (x.button == PointerEventData.InputButton.Left)
                     _cameraController.RotateModel(x.delta);
+
+                if (x.button == PointerEventData.InputButton.Middle)
+                    _cameraController.MoveCamera(x.delta);
             };
 
             _viewInputReceiver.OnScrollEvent = x =>
@@ -28,6 +31,8 @@ namespace ModelViewer
             _cameraMenuView.OnRotationLeftButton = () => _cameraController.SetRotateY(-90);
             _cameraMenuView.OnRotationRightButton = () => _cameraController.SetRotateY(90);
             _cameraMenuView.OnRotationBackButton = () => _cameraController.SetRotateY(0);
+            
+            _animationMenuView.ApplyParam(_model.Animator);
         }
 
         void OnEnable()

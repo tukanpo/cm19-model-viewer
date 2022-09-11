@@ -17,7 +17,7 @@ namespace ModelViewer
             foreach (var x in layerInfo.StateInfos)
             {
                 var obj = Instantiate(_contentPrefab, _content.transform);
-                obj.ApplyParam(new AnimationStateView.Param(x.Name, layerInfo.Index));
+                obj.ApplyParam(new AnimationStateView.Param(x.FullPath, layerInfo.Index));
                 obj.OnChanged = onChanged;
             }
         }
